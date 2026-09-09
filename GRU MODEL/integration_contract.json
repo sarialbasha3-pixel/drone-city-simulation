@@ -1,0 +1,36 @@
+{
+  "project": "Project Ghost",
+  "model": "GRU V3",
+  "checkpoint": "model/PROJECT_GHOST_GRU_V3_BEST_VALIDATION.pt",
+  "dataset_rows_source": 1422348,
+  "model_training_windows": 8313,
+  "training_regimes": ["OPEN_LOOP", "V1_CLOSED", "V2_ONPOLICY"],
+  "window": {
+    "duration_s": 1.0,
+    "sample_rate_hz": 100.0,
+    "timesteps": 101,
+    "features": 24,
+    "native_correction_stride_s": 0.5,
+    "requested_simulation_demo_interval_s": 3.0
+  },
+  "feature_order": [
+    "feat_gx_rad_s", "feat_gy_rad_s", "feat_gz_rad_s",
+    "feat_ax_m_s2", "feat_ay_m_s2", "feat_az_m_s2",
+    "feat_eskf_vx_m_s", "feat_eskf_vy_m_s", "feat_eskf_vz_m_s",
+    "feat_rot6d_r11", "feat_rot6d_r21", "feat_rot6d_r31",
+    "feat_rot6d_r12", "feat_rot6d_r22", "feat_rot6d_r32",
+    "feat_sigma_px_m", "feat_sigma_py_m", "feat_sigma_pz_m",
+    "feat_sigma_vx_m_s", "feat_sigma_vy_m_s", "feat_sigma_vz_m_s",
+    "feat_sigma_theta_x_rad", "feat_sigma_theta_y_rad", "feat_sigma_theta_z_rad"
+  ],
+  "output": {
+    "order": ["delta_vx_m_s", "delta_vy_m_s", "delta_vz_m_s"],
+    "definition": "delta_v = v_GT - v_ESKF learned offline; at runtime form v_pseudo = v_ESKF + predicted_delta_v"
+  },
+  "http_bridge": {
+    "method": "POST",
+    "path": "/infer",
+    "request": {"features": "101x24 raw feature array", "eskf_velocity_m_s": "optional [vx,vy,vz]"},
+    "response": {"delta_v_m_s": "[dvx,dvy,dvz]", "pseudo_velocity_m_s": "optional [vx,vy,vz]"}
+  }
+}

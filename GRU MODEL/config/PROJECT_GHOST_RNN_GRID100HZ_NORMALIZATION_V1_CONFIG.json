@@ -1,0 +1,71 @@
+{
+  "project": "Project Ghost",
+  "version": "GRID_100HZ_NORMALIZED_V1",
+  "source_windows": "WINDOWS_1S_FINAL_V1",
+  "window_duration_s": 1.0,
+  "correction_stride_s": 0.5,
+  "common_grid_hz": 100.0,
+  "grid_dt_s": 0.01,
+  "timesteps_per_window": 101,
+  "feature_dimension": 24,
+  "target_dimension": 3,
+  "feature_order": [
+    "feat_gx_rad_s",
+    "feat_gy_rad_s",
+    "feat_gz_rad_s",
+    "feat_ax_m_s2",
+    "feat_ay_m_s2",
+    "feat_az_m_s2",
+    "feat_eskf_vx_m_s",
+    "feat_eskf_vy_m_s",
+    "feat_eskf_vz_m_s",
+    "feat_rot6d_r11",
+    "feat_rot6d_r21",
+    "feat_rot6d_r31",
+    "feat_rot6d_r12",
+    "feat_rot6d_r22",
+    "feat_rot6d_r32",
+    "feat_sigma_px_m",
+    "feat_sigma_py_m",
+    "feat_sigma_pz_m",
+    "feat_sigma_vx_m_s",
+    "feat_sigma_vy_m_s",
+    "feat_sigma_vz_m_s",
+    "feat_sigma_theta_x_rad",
+    "feat_sigma_theta_y_rad",
+    "feat_sigma_theta_z_rad"
+  ],
+  "target_order": [
+    "target_dvx_m_s",
+    "target_dvy_m_s",
+    "target_dvz_m_s"
+  ],
+  "common_grid_method": "timestamp_aware_linear_interpolation",
+  "rotation6d_after_interpolation": "Gram_Schmidt_reorthonormalization",
+  "extrapolation_allowed": false,
+  "normalization": "per_feature_standardization",
+  "normalization_fit_split": "TRAIN_ONLY",
+  "target_normalization": "per_axis_standardization",
+  "target_normalization_fit_split": "TRAIN_ONLY",
+  "validation_used_for_normalization_fit": false,
+  "test_used_for_normalization_fit": false,
+  "target_clipping": false,
+  "synthetic_windows": false,
+  "window_counts": {
+    "train": 2771,
+    "validation": 868,
+    "test": 677,
+    "total": 4316
+  },
+  "tensor_files": {
+    "train": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/train_grid100hz_normalized_v1.npz",
+    "validation": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/validation_grid100hz_normalized_v1.npz",
+    "test": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/test_grid100hz_normalized_v1.npz"
+  },
+  "metadata_files": {
+    "train": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/train_window_metadata.parquet",
+    "validation": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/validation_window_metadata.parquet",
+    "test": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/06_RNN_READY/GRID_100HZ_NORMALIZED_V1/test_window_metadata.parquet"
+  },
+  "sha256": "ff0fdabca4917caeee86c5c461c7611d116fae82df9d9be25c9da01144df4ae3"
+}

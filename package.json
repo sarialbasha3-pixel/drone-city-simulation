@@ -1,0 +1,17 @@
+{
+  "name": "drone-city-simulation",
+  "version": "1.0.0",
+  "description": "Large-scale realistic 3D Drone City Simulation built with Three.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

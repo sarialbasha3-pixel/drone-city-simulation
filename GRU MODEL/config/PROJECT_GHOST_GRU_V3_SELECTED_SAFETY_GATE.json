@@ -1,0 +1,51 @@
+{
+  "project": "Project Ghost",
+  "experiment": "GRU_V3_SAFETY_GATE_CALIBRATION_V1",
+  "model": "GRU V3",
+  "model_checkpoint": "/content/drive/MyDrive/Project_Ghost_Dataset_V3/07_RNN_MODELS/GRU_ITERATION_3_V1/PROJECT_GHOST_GRU_V3_BEST_VALIDATION.pt",
+  "model_retrained": false,
+  "test_loaded": false,
+  "ood_model": {
+    "input": "48D mean+std summary of normalized 101x24 window",
+    "estimator": "LedoitWolf covariance",
+    "fit_split": "V2_ONPOLICY_TRAIN_ONLY",
+    "score": "Mahalanobis squared distance",
+    "selected_label": "Q950",
+    "selected_threshold": 74.81232026342948
+  },
+  "temporal_gate": {
+    "metric": "L2 difference between consecutive GRU delta-v predictions",
+    "fit_split": "V2_ONPOLICY_TRAIN_ONLY",
+    "selected_label": "Q950",
+    "selected_threshold_m_s": 4.590267322161722
+  },
+  "nis": {
+    "dof": 3,
+    "confidence": 0.99,
+    "threshold": 11.344866730144373,
+    "severe_factor": 4.0,
+    "severe_threshold": 45.37946692057749
+  },
+  "circuit_breaker": {
+    "cooldown_correction_windows": 4,
+    "recovery_healthy_streak": 3
+  },
+  "selection": {
+    "split": "VALIDATION_ONLY",
+    "require_every_validation_flight_not_worse_than_baseline": true,
+    "performance_score": "0.5*(position_macro_ratio + velocity_macro_ratio)",
+    "near_best_tolerance": 0.03,
+    "conservative_tiebreak": "lower correction application rate"
+  },
+  "validation_result": {
+    "safe_gate_found": true,
+    "position_rmse_macro_m": 455.24153094616105,
+    "position_error_reduction_pct": 92.91065630378687,
+    "velocity_rmse_macro_m_s": 6.978651523022123,
+    "velocity_error_reduction_pct": 92.18242306294428,
+    "flights_better_than_baseline_in_both": 3,
+    "candidate_updates": 868,
+    "applied_updates": 841,
+    "application_rate_pct": 96.88940092165899
+  }
+}

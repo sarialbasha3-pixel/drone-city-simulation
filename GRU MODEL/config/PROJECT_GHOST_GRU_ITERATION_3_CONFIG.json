@@ -1,0 +1,65 @@
+{
+  "project": "Project Ghost",
+  "experiment": "GRU_ITERATION_3_V1",
+  "architecture": "GRU",
+  "test_loaded": false,
+  "training_from_scratch": true,
+  "training_windows": 8313,
+  "training_regimes": {
+    "open_loop": 2771,
+    "v1_closed_loop": 2771,
+    "v2_onpolicy_closed_loop": 2771
+  },
+  "balanced_sampling": {
+    "enabled": true,
+    "balances": [
+      "regime",
+      "source",
+      "flight"
+    ]
+  },
+  "confidence_gate": {
+    "ood_score": "window_quantile_0.99_abs_normalized_features",
+    "ood_threshold_quantile_train": 0.995,
+    "ood_threshold": 8.855957048014446,
+    "prediction_norm_threshold_quantile_train": 0.995,
+    "prediction_norm_threshold_m_s": 1853.5967672117447
+  },
+  "nis_threshold": 11.344866730144373,
+  "R_source": "GRU_V3 residuals on V2-on-policy TRAIN",
+  "R": [
+    [
+      10.926068738358813,
+      8.467179724140863,
+      6.626947338769674
+    ],
+    [
+      8.467179724140863,
+      22.101554253742748,
+      8.100015736297278
+    ],
+    [
+      6.626947338769674,
+      8.10001573629728,
+      17.565651871856858
+    ]
+  ],
+  "R_sigma": [
+    3.305460442715782,
+    4.701229015240881,
+    4.1911396865121135
+  ],
+  "best_epoch": 30,
+  "recursive_validation": {
+    "baseline_position_macro_m": 6421.490485633167,
+    "gru_v2_position_macro_m": 433.16021890540196,
+    "gru_v3_position_macro_m": 506.74222507463884,
+    "gru_v3_position_reduction_pct": 92.10865100231207,
+    "baseline_velocity_macro_m_s": 89.26872839514967,
+    "gru_v2_velocity_macro_m_s": 8.236709565382354,
+    "gru_v3_velocity_macro_m_s": 7.137694665693487,
+    "gru_v3_velocity_reduction_pct": 92.00426084922107,
+    "flights_improved_both": 3
+  },
+  "sha256": "f4158ff782b7d9291265a7e94e7c36bc58e5a83eb76b6e8786f755d9eb1babac"
+}
