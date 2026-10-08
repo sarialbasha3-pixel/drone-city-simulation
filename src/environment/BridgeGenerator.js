@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import { MaterialManager } from '../materials/MaterialManager.js';
 
 /**
  * BridgeGenerator - Realistic Engineered Suspension & Viaduct Bridge
@@ -27,22 +28,22 @@ export class BridgeGenerator {
   }
 
   initMaterials() {
-    const bumpMap = ProceduralTextures.getAsphaltBumpTexture();
-    const roughnessMap = ProceduralTextures.getAsphaltRoughnessTexture();
+    const asphaltNormal = MaterialManager.loadNormalTexture('asphalt_01_nor_gl_1k.png', 2, 12);
+    const asphaltRoughness = MaterialManager.loadRoughnessTexture('asphalt_01_rough_1k.png', 2, 12);
 
     this.deckMaterial = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getHighwayTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.04,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.7, 0.7),
+      roughnessMap: asphaltRoughness,
       roughness: 0.85,
       metalness: 0.12
     });
 
-    this.concreteMaterial = new THREE.MeshStandardMaterial({
-      color: 0x9eabb3,
-      roughness: 0.82,
-      metalness: 0.1
+    this.concreteMaterial = MaterialManager.getConcreteMaterial({
+      repeatX: 2,
+      repeatY: 4,
+      color: 0x9eabb3
     });
 
     this.steelPylonMaterial = new THREE.MeshStandardMaterial({
@@ -63,10 +64,10 @@ export class BridgeGenerator {
       metalness: 0.85
     });
 
-    this.barrierMaterial = new THREE.MeshStandardMaterial({
-      color: 0xbac0c5,
-      roughness: 0.65,
-      metalness: 0.25
+    this.barrierMaterial = MaterialManager.getConcreteMaterial({
+      repeatX: 1,
+      repeatY: 6,
+      color: 0xbac0c5
     });
 
     this.beaconMaterial = new THREE.MeshBasicMaterial({

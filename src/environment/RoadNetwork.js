@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import { MaterialManager } from '../materials/MaterialManager.js';
 
 /**
  * RoadNetwork - Generates a realistic, intentionally designed urban road infrastructure.
@@ -25,14 +26,14 @@ export class RoadNetwork {
   }
 
   initMaterials() {
-    const bumpMap = ProceduralTextures.getAsphaltBumpTexture();
-    const roughnessMap = ProceduralTextures.getAsphaltRoughnessTexture();
+    const asphaltNormal = MaterialManager.loadNormalTexture('asphalt_01_nor_gl_1k.png', 2, 8);
+    const asphaltRoughness = MaterialManager.loadRoughnessTexture('asphalt_01_rough_1k.png', 2, 8);
 
     this.materials.urbanRoad = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getRoadTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.035,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.65, 0.65),
+      roughnessMap: asphaltRoughness,
       roughness: 0.88,
       metalness: 0.08,
       polygonOffset: true,
@@ -42,9 +43,9 @@ export class RoadNetwork {
 
     this.materials.avenue = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getAvenueTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.035,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.65, 0.65),
+      roughnessMap: asphaltRoughness,
       roughness: 0.85,
       metalness: 0.1,
       polygonOffset: true,
@@ -54,9 +55,9 @@ export class RoadNetwork {
 
     this.materials.highway = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getHighwayTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.04,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.7, 0.7),
+      roughnessMap: asphaltRoughness,
       roughness: 0.82,
       metalness: 0.12,
       polygonOffset: true,
@@ -66,9 +67,9 @@ export class RoadNetwork {
 
     this.materials.intersection = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getIntersectionTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.03,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.6, 0.6),
+      roughnessMap: asphaltRoughness,
       roughness: 0.88,
       metalness: 0.08,
       polygonOffset: true,
@@ -78,9 +79,9 @@ export class RoadNetwork {
 
     this.materials.roundabout = new THREE.MeshStandardMaterial({
       map: ProceduralTextures.getRoundaboutTexture(),
-      bumpMap: bumpMap,
-      bumpScale: 0.035,
-      roughnessMap: roughnessMap,
+      normalMap: asphaltNormal,
+      normalScale: new THREE.Vector2(0.65, 0.65),
+      roughnessMap: asphaltRoughness,
       roughness: 0.85,
       metalness: 0.1,
       polygonOffset: true,
@@ -88,17 +89,8 @@ export class RoadNetwork {
       polygonOffsetUnits: -1.2
     });
 
-    this.materials.sidewalk = new THREE.MeshStandardMaterial({
-      map: ProceduralTextures.getSidewalkTexture(),
-      roughness: 0.9,
-      metalness: 0.05
-    });
-
-    this.materials.curb = new THREE.MeshStandardMaterial({
-      color: 0x909498,
-      roughness: 0.82,
-      metalness: 0.08
-    });
+    this.materials.sidewalk = MaterialManager.getSidewalkMaterial({ repeatX: 1, repeatY: 10 });
+    this.materials.curb = MaterialManager.getCurbMaterial({ repeatX: 1, repeatY: 12 });
 
     this.materials.guardrail = new THREE.MeshStandardMaterial({
       color: 0xb8bcc0,

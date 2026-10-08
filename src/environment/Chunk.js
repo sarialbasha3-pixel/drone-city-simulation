@@ -77,12 +77,12 @@ export class Chunk {
           this.group.add(stepped);
           this.collisionObjects.push(stepped);
         } else {
-          // Perimeter Downtown Blocks: Mixed high-rises and commercial plazas
+          // Perimeter Downtown Blocks: Mixed high-rises, commercial plazas, and modular skyscrapers
           const b1 = bg.createCylindricalTower(this.minX + 65, this.minZ + 65, 115);
           this.group.add(b1);
           this.collisionObjects.push(b1);
 
-          const b2 = bg.createFinancialPlazaHQ(this.minX + 175, this.minZ + 65, 58);
+          const b2 = bg.createModularSkyscraper(this.minX + 175, this.minZ + 65, 'a');
           this.group.add(b2);
           this.collisionObjects.push(b2);
 
@@ -90,7 +90,7 @@ export class Chunk {
           this.group.add(b3);
           this.collisionObjects.push(b3);
 
-          const b4 = bg.createCommercialBuilding(this.minX + 175, this.minZ + 175, 42, 34, 45);
+          const b4 = bg.createModularBuilding(this.minX + 175, this.minZ + 175, 'b');
           this.group.add(b4);
           this.collisionObjects.push(b4);
         }
@@ -112,12 +112,12 @@ export class Chunk {
           this.group.add(gas);
           this.collisionObjects.push(gas);
         } else {
-          const office = bg.createCommercialBuilding(this.minX + 75, this.minZ + 175, 42, 32, 38);
+          const office = bg.createModularBuilding(this.minX + 75, this.minZ + 175, 'd');
           this.group.add(office);
           this.collisionObjects.push(office);
         }
 
-        const commOffice = bg.createCommercialBuilding(this.minX + 175, this.minZ + 175, 40, 32, 42);
+        const commOffice = bg.createModularBuilding(this.minX + 175, this.minZ + 175, 'c');
         this.group.add(commOffice);
         this.collisionObjects.push(commOffice);
         break;

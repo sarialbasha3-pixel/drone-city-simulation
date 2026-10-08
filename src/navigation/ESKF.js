@@ -315,10 +315,11 @@ export class ESKF {
   }
 
   /** Reset to a starting state (call at each new route start) */
-  reset(startPos, startVel) {
+  reset(startPos, startVel, initialHeading = 0) {
     this.p  = [...startPos];
-    this.v  = startVel ? [...startVel] : [0,0,0];
-    this.q  = [1, 0, 0, 0];
+    this.v  = startVel ? [...startVel] : [0, 0, 0];
+    const halfH = initialHeading * 0.5;
+    this.q  = [Math.cos(halfH), 0, Math.sin(halfH), 0];
     this.ba = [0, 0, 0];
     this.bg = [0, 0, 0];
     this.R_WB = this._quatToRotMat(this.q);

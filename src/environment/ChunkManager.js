@@ -34,7 +34,7 @@ export class ChunkManager {
         this.chunks.set(key, chunk);
 
         // Register chunk collision with collision system
-        this.collisionSystem.registerObstacles(chunk.collisionObjects);
+        this.collisionSystem.registerObstacles(chunk.collisionObjects, 'BUILDING');
       }
     }
   }

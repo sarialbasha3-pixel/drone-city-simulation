@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MaterialManager } from './materials/MaterialManager.js';
 import { World } from './scene/World.js';
 import { Drone } from './drone/Drone.js';
 import { FlightController } from './drone/FlightController.js';
@@ -11,6 +12,14 @@ import { ESKF } from './navigation/ESKF.js';
 import { GRUBridge } from './navigation/GRUBridge.js';
 import { RouteController } from './navigation/RouteController.js';
 import { NavigationHUD } from './navigation/NavigationHUD.js';
+
+// PULP-DroNet Obstacle Avoidance & Perception Sensor Suite
+import { FixedObstacleManager } from './environment/FixedObstacle.js';
+import { DroneCameraSensor } from './sensors/DroneCameraSensor.js';
+import { DronePerceptionSuite } from './sensors/DronePerceptionSuite.js';
+import { ObstacleAvoidanceSystem } from './navigation/ObstacleAvoidanceSystem.js';
+import { ObstacleHUD } from './drone/ObstacleHUD.js';
+import { WeatherSystem } from './environment/WeatherSystem.js';
 
 // ── Renderer ────────────────────────────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({
@@ -26,6 +35,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 document.body.appendChild(renderer.domElement);
+
+MaterialManager.initRendererCapabilities(renderer);
 
 // ── Scene & Camera ──────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
@@ -63,6 +74,58 @@ const navHud = new NavigationHUD(() => routeController.toggleRouteMode());
 // ── Sensor interface ────────────────────────────────────────────────────────
 const sensors = new SensorInterface(scene, drone);
 
+// ── Fixed Traversable Obstacles & PULP-DroNet Avoidance Suite ──────────────
+const fixedObstacleManager = new FixedObstacleManager(scene, collisionSystem);
+fixedObstacleManager.spawnDefaultObstacles();
+
+const droneCameraSensor = new DroneCameraSensor(drone, { resolution: 200, fov: 75 });
+const perceptionSuite = new DronePerceptionSuite(scene, drone);
+const obstacleAvoidance = new ObstacleAvoidanceSystem(drone, droneCameraSensor, perceptionSuite, fixedObstacleManager, { scene, collisionSystem });
+const obstacleHud = new ObstacleHUD(droneCameraSensor);
+
+// ── Weather & Atmospheric System (Default: CLEAR SKY, Fog is OFF) ─────────
+const weatherSystem = new WeatherSystem(
+  scene,
+  world.lighting,
+  world.skyDome,
+  routeController,
+  droneCameraSensor
+);
+
+// Connect HUD Weather Toggle Buttons
+hud.onToggleFog = () => {
+  weatherSystem.toggleFog();
+};
+
+hud.onToggleRain = () => {
+  weatherSystem.toggleRain();
+};
+
+weatherSystem.onStateChange((tele) => {
+  hud.setWeatherStatus(tele);
+});
+
+// Key 'F' toggle Fog environment
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyF') {
+    weatherSystem.toggleFog();
+  }
+});
+
+// Key 'R' toggle Rain environment
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyR') {
+    weatherSystem.toggleRain();
+  }
+});
+
+// Key 'L' toggle 3D laser beams
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyL') {
+    perceptionSuite.toggleLaserBeams();
+  }
+});
+
 // ── State for smooth visual correction lerping ─────────────────────────────
 let isVisualLerping = false;
 let visualLerpElapsed = 0;
@@ -84,7 +147,7 @@ window.addEventListener('keydown', (e) => {
 
       // 1. Compute initial heading towards next waypoint
       const dir = new THREE.Vector3().subVectors(wp1, wp0);
-      const heading = dir.lengthSq() > 0.01 ? Math.atan2(dir.x, dir.z) : 0;
+      const heading = dir.lengthSq() > 0.01 ? Math.atan2(-dir.x, -dir.z) : 0;
 
       // 2. Position drone directly at start waypoint
       drone.mesh.position.copy(wp0);
@@ -95,8 +158,8 @@ window.addEventListener('keydown', (e) => {
       camera.position.copy(wp0).add(startCamOffset);
       camera.lookAt(wp0.clone().add(new THREE.Vector3(0, 0.4, 0)));
 
-      // 4. Reset ESKF filter at starting position with zero initial error
-      eskf.reset([wp0.x, wp0.y, wp0.z], [0, 0, 0]);
+      // 4. Reset ESKF filter at starting position with matching initial heading
+      eskf.reset([wp0.x, wp0.y, wp0.z], [0, 0, 0], heading);
 
       // 5. Sync flight controller position as fallback
       flightController.position.copy(wp0);
@@ -230,9 +293,16 @@ function animate() {
     world.update(delta, flightController.position);
   }
 
-  // ── 4. Sensor & HUD Updates ───────────────────────────────────────────────
+  // ── 4. Weather, Sensor & HUD Updates ─────────────────────────────────────
+  const activeDronePos = routeController.isFlying ? drone.mesh.position : flightController.position;
+  weatherSystem.update(delta, activeDronePos);
   sensors.updateSensors();
+  perceptionSuite.updateSensors();
+  droneCameraSensor.update(delta, renderer, scene);
+  obstacleAvoidance.update(delta, flightController, routeController);
+  obstacleHud.update(obstacleAvoidance.getTelemetry(), perceptionSuite.getTelemetry());
 
+  hud.setWeatherStatus(weatherSystem.getTelemetry());
   if (!routeController.isFlying) {
     const telemetry = flightController.getTelemetry(world.terrain);
     hud.update(telemetry, collisionSystem.hasCollided, currentFps);

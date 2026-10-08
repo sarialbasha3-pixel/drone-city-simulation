@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { globalNoise } from '../utils/Noise.js';
 import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import { MaterialManager } from '../materials/MaterialManager.js';
 
 /**
  * Terrain - Multi-district continuous 3D terrain system
@@ -14,16 +15,7 @@ export class Terrain {
   }
 
   initMaterials() {
-    const grassTex = ProceduralTextures.getGrassTexture();
-    const rockTex = ProceduralTextures.getRockTexture();
-
-    this.terrainMaterial = new THREE.MeshStandardMaterial({
-      map: grassTex,
-      roughness: 0.9,
-      metalness: 0.05,
-      flatShading: false,
-      vertexColors: true
-    });
+    this.terrainMaterial = MaterialManager.getTerrainGrassMaterial({ repeatX: 16, repeatY: 16 });
   }
 
   /**

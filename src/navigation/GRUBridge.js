@@ -41,20 +41,30 @@ export class GRUBridge {
     // Temporal jump threshold from safety gate (§13)
     this.TEMPORAL_JUMP_THRESHOLD = 4.590267; // m/s
 
-    // Check health on startup
+    // Check health on startup and keep status updated continuously
     this._checkHealth();
+    this._healthInterval = setInterval(() => this._checkHealth(), 2500);
   }
 
   async _checkHealth() {
     try {
       const res = await fetch(this.HEALTH_URL, { signal: AbortSignal.timeout(2000) });
       if (res.ok) {
+        if (!this.bridgeReady) {
+          console.log('[GRUBridge] Connected to FastAPI bridge — GRU V3 model is ready.');
+        }
         this.bridgeReady = true;
-        console.log('[GRUBridge] FastAPI bridge is healthy — GRU V3 loaded.');
+        if (this.status === 'WAITING') this.status = 'READY';
+      } else {
+        this.bridgeReady = false;
+        this.status = 'WAITING';
       }
     } catch {
+      if (this.bridgeReady) {
+        console.warn('[GRUBridge] FastAPI bridge connection lost at', this.HEALTH_URL);
+      }
       this.bridgeReady = false;
-      console.warn('[GRUBridge] FastAPI bridge not reachable at', this.HEALTH_URL);
+      this.status = 'WAITING';
     }
   }
 

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { ProceduralTextures } from '../utils/ProceduralTextures.js';
+import { MaterialManager } from '../materials/MaterialManager.js';
+import { AssetManager } from '../materials/AssetManager.js';
 
 /**
  * BuildingGenerator - Comprehensive library of diverse architectural typologies.
@@ -34,50 +36,50 @@ export class BuildingGenerator {
       metalness: 0.78
     });
 
-    // Commercial & Retail Facades
-    this.materials.commercial = new THREE.MeshStandardMaterial({
-      map: ProceduralTextures.getCommercialFacadeTexture(),
-      roughness: 0.6,
-      metalness: 0.2
+    // Commercial & Retail Facades with PBR Plaster / Moldings
+    this.materials.commercial = MaterialManager.getPlasterFacadeMaterial({
+      repeatX: 3,
+      repeatY: 3,
+      color: 0xe8e6e1
     });
 
-    // Residential Brick & Stucco Facades
-    this.materials.residential = new THREE.MeshStandardMaterial({
-      map: ProceduralTextures.getResidentialFacadeTexture(),
-      roughness: 0.85,
-      metalness: 0.05
+    // Residential Apartment Facades with PBR Objects / Windows / Metal
+    this.materials.residential = MaterialManager.getApartmentFacadeMaterial({
+      repeatX: 3,
+      repeatY: 3
     });
 
-    this.materials.brickTan = new THREE.MeshStandardMaterial({
-      color: 0xbcaaa4,
-      roughness: 0.88,
-      metalness: 0.05
+    // PBR Stacked Brick Walls (Tan / Buff variant)
+    this.materials.brickTan = MaterialManager.getBrickMaterial({
+      repeatX: 4,
+      repeatY: 4,
+      color: 0xcdbca8
     });
 
-    this.materials.brickRed = new THREE.MeshStandardMaterial({
-      color: 0x8d493a,
-      roughness: 0.85,
-      metalness: 0.05
+    // PBR Stacked Brick Walls (Red Clay variant)
+    this.materials.brickRed = MaterialManager.getBrickMaterial({
+      repeatX: 4,
+      repeatY: 4,
+      color: 0x9b4d3f
     });
 
-    this.materials.whiteStucco = new THREE.MeshStandardMaterial({
-      color: 0xefede8,
-      roughness: 0.75,
-      metalness: 0.02
+    // PBR Fine Plaster / White Stucco
+    this.materials.whiteStucco = MaterialManager.getPlasterFacadeMaterial({
+      repeatX: 3,
+      repeatY: 3,
+      color: 0xf5f3ee
     });
 
-    // Industrial Corrugated Metal
-    this.materials.industrial = new THREE.MeshStandardMaterial({
-      map: ProceduralTextures.getIndustrialFacadeTexture(),
-      roughness: 0.55,
-      metalness: 0.65
+    // Industrial Corrugated Metal & Steel Siding
+    this.materials.industrial = MaterialManager.getIndustrialMetalMaterial({
+      repeatX: 3,
+      repeatY: 3
     });
 
-    // Roof Textures
-    this.materials.roofStandard = new THREE.MeshStandardMaterial({
-      map: ProceduralTextures.getRoofTexture(false),
-      roughness: 0.9,
-      metalness: 0.1
+    // Roof Textures (PBR Asphalt / Tar Gravel)
+    this.materials.roofStandard = MaterialManager.getRoofAsphaltMaterial({
+      repeatX: 4,
+      repeatY: 4
     });
 
     this.materials.roofHelipad = new THREE.MeshStandardMaterial({
@@ -104,11 +106,11 @@ export class BuildingGenerator {
       metalness: 0.05
     });
 
-    // Structural Elements
-    this.materials.concrete = new THREE.MeshStandardMaterial({
-      color: 0xa5a8ad,
-      roughness: 0.8,
-      metalness: 0.1
+    // Structural Elements (PBR Concrete with aggregate relief)
+    this.materials.concrete = MaterialManager.getConcreteMaterial({
+      repeatX: 2,
+      repeatY: 2,
+      color: 0xa5a8ad
     });
 
     this.materials.metalDetails = new THREE.MeshStandardMaterial({
@@ -133,7 +135,7 @@ export class BuildingGenerator {
   }
 
   /**
-   * Adds realistic rooftop equipment (HVAC chillers, elevator motor rooms, cooling towers, antennas, water tanks)
+   * Adds realistic rooftop equipment (HVAC chillers, elevator motor rooms, cooling towers, antennas, water tanks, 3D solar panels)
    */
   addRooftopDetails(parent, roofWidth, roofDepth, roofY, hasHelipad = false) {
     if (hasHelipad && roofWidth >= 22 && roofDepth >= 22) {
@@ -169,13 +171,25 @@ export class BuildingGenerator {
       parent.add(fan);
     });
 
-    // Rooftop water tank (wooden/metal tank common in cities)
-    if (Math.random() < 0.45 && roofWidth > 18) {
-      const tankGeom = new THREE.CylinderGeometry(2.4, 2.4, 4.0, 12);
-      const tank = new THREE.Mesh(tankGeom, this.materials.metalDetails);
-      tank.position.set(roofWidth * 0.22, roofY + 2.0, -roofDepth * 0.22);
-      tank.castShadow = true;
-      parent.add(tank);
+    // 3D Solar Panel Array on wide commercial/residential roofs
+    if (!hasHelipad && roofWidth >= 24 && roofDepth >= 22) {
+      const solarPos = new THREE.Vector3(0, roofY + 0.1, 0);
+      AssetManager.createInstance('solar-panel-landscape-group.glb', solarPos, 0, 1.0).then((inst) => {
+        if (inst) parent.add(inst);
+      });
+    }
+
+    // 3D Rooftop Water Tower or Industrial Tank
+    if (roofY > 35 && Math.random() < 0.5) {
+      const wtPos = new THREE.Vector3(-roofWidth * 0.22, roofY, roofDepth * 0.22);
+      AssetManager.createInstance('water-tower.glb', wtPos, 0, 0.85).then((inst) => {
+        if (inst) parent.add(inst);
+      });
+    } else if (roofWidth > 18 && Math.random() < 0.4) {
+      const tankPos = new THREE.Vector3(roofWidth * 0.22, roofY, -roofDepth * 0.22);
+      AssetManager.createInstance('detail-tank.glb', tankPos, 0, 0.9).then((inst) => {
+        if (inst) parent.add(inst);
+      });
     }
 
     // Spire / Telecommunication mast with red hazard beacon
@@ -708,6 +722,14 @@ export class BuildingGenerator {
       group.add(beacon);
     });
 
+    // 3D Large Storage Tanks on the factory perimeter
+    [-18, 18].forEach((tx) => {
+      const tankPos = new THREE.Vector3(tx, 0, hallD * 0.5 + 8);
+      AssetManager.createInstance('detail-tank-large.glb', tankPos, 0, 1.0).then((inst) => {
+        if (inst) group.add(inst);
+      });
+    });
+
     return group;
   }
 
@@ -739,34 +761,52 @@ export class BuildingGenerator {
   }
 
   /**
-   * 15. Stacked Intermodal Shipping Containers
+   * 15. Stacked Intermodal Shipping Containers with genuine 3D GLB Models
    */
   createContainerYard(x, z) {
     const group = new THREE.Group();
     const baseH = this.terrain.getHeight(x, z);
     group.position.set(x, baseH, z);
 
-    const colors = ['#b71c1c', '#0d47a1', '#1b5e20', '#f57f17'];
-    const cW = 12.2;
-    const cH = 2.6;
-    const cD = 2.4;
+    const transformsA = [];
+    const transformsB = [];
+    const transformsC = [];
 
-    for (let row = -2; row <= 2; row++) {
-      for (let col = -1; col <= 1; col++) {
+    const cW = 3.2;
+    const cL = 6.4;
+    const cH = 2.6;
+
+    for (let row = -3; row <= 3; row++) {
+      for (let col = -2; col <= 2; col++) {
+        if (Math.random() < 0.15) continue; // aisle clearance
         const stackHeight = 1 + Math.floor(Math.random() * 3);
         for (let h = 0; h < stackHeight; h++) {
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          const mat = new THREE.MeshStandardMaterial({
-            map: ProceduralTextures.getContainerTexture(color),
-            roughness: 0.6,
-            metalness: 0.4
-          });
-          const box = new THREE.Mesh(new THREE.BoxGeometry(cW, cH, cD), mat);
-          box.position.set(col * (cW + 1.5), h * cH + cH * 0.5, row * (cD + 0.8));
-          box.castShadow = true;
-          group.add(box);
+          const t = {
+            pos: new THREE.Vector3(col * cW, h * cH, row * cL),
+            rotY: (col % 2 === 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 0.04
+          };
+          const r = Math.random();
+          if (r < 0.4) transformsA.push(t);
+          else if (r < 0.75) transformsB.push(t);
+          else transformsC.push(t);
         }
       }
+    }
+
+    if (transformsA.length > 0) {
+      AssetManager.createInstancedMesh('shipping-container-a.glb', transformsA).then((inst) => {
+        if (inst) group.add(inst);
+      });
+    }
+    if (transformsB.length > 0) {
+      AssetManager.createInstancedMesh('shipping-container-b.glb', transformsB).then((inst) => {
+        if (inst) group.add(inst);
+      });
+    }
+    if (transformsC.length > 0) {
+      AssetManager.createInstancedMesh('shipping-container-c.glb', transformsC).then((inst) => {
+        if (inst) group.add(inst);
+      });
     }
 
     return group;
@@ -1027,5 +1067,37 @@ export class BuildingGenerator {
 
   createHelipadTower(x, z, height = 85) {
     return this.createCylindricalTower(x, z, height);
+  }
+
+  /**
+   * 23. Modular High-Rise Skyscraper from 3D Kenney GLB Library
+   */
+  createModularSkyscraper(x, z, variant = 'a') {
+    const group = new THREE.Group();
+    const baseH = this.terrain.getHeight(x, z);
+    group.position.set(x, baseH, z);
+
+    const modelName = `building-skyscraper-${variant}.glb`;
+    AssetManager.createInstance(modelName, new THREE.Vector3(0, 0, 0), 0, 1.0).then((inst) => {
+      if (inst) group.add(inst);
+    });
+
+    return group;
+  }
+
+  /**
+   * 24. Modular Commercial Office Building from 3D Kenney GLB Library
+   */
+  createModularBuilding(x, z, variant = 'a') {
+    const group = new THREE.Group();
+    const baseH = this.terrain.getHeight(x, z);
+    group.position.set(x, baseH, z);
+
+    const modelName = `building-${variant}.glb`;
+    AssetManager.createInstance(modelName, new THREE.Vector3(0, 0, 0), 0, 1.0).then((inst) => {
+      if (inst) group.add(inst);
+    });
+
+    return group;
   }
 }

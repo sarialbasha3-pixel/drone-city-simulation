@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
+    "gru": "\"GRU MODEL\\.venv\\Scripts\\python.exe\" -m uvicorn server_fastapi:app --app-dir \"GRU MODEL\" --host 127.0.0.1 --port 8765",
+    "dronet": "\"GRU MODEL\\.venv\\Scripts\\python.exe\" -m uvicorn server:app --app-dir \"dronet_service\" --host 127.0.0.1 --port 8766",
     "build": "vite build",
     "preview": "vite preview"
   },

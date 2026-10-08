@@ -41,6 +41,9 @@ export class RouteController {
     this.routeIndex  = 0;        // current waypoint target index
     this.simTime     = 0;        // simulation time (s)
 
+    // Obstacle Avoidance Priority Override Target
+    this.bypassOverrideTarget = null;
+
     // Controller gains
     this.kp_pos     = 1.8;   // proportional position gain (m/s per m)
     this.kp_vel     = 3.2;   // velocity tracking damping
@@ -599,12 +602,12 @@ export class RouteController {
     this.droneVelocity.set(0, 0, 0);
 
     const dir = new THREE.Vector3().subVectors(wp1, wp0);
-    this.droneHeading = dir.lengthSq() > 0.01 ? Math.atan2(dir.x, dir.z) : 0;
+    this.droneHeading = dir.lengthSq() > 0.01 ? Math.atan2(-dir.x, -dir.z) : 0;
     this.dronePitch   = 0;
     this.droneRoll    = 0;
 
-    // Reset ESKF at starting waypoint
-    if (eskf) eskf.reset([wp0.x, wp0.y, wp0.z], [0, 0, 0]);
+    // Reset ESKF at starting waypoint with matching initial heading
+    if (eskf) eskf.reset([wp0.x, wp0.y, wp0.z], [0, 0, 0], this.droneHeading);
 
     if (this.onFlightStart) this.onFlightStart();
     console.log('[RouteController] Autonomous flight started at wp0:', wp0);
@@ -614,7 +617,22 @@ export class RouteController {
   stopFlight() {
     this.isFlying   = false;
     this.isHovering = false;
+    this.bypassOverrideTarget = null;
     if (this.onFlightStop) this.onFlightStop();
+  }
+
+  /**
+   * Sets temporary obstacle avoidance bypass waypoint (takes absolute priority over route).
+   */
+  setBypassOverride(targetPos) {
+    this.bypassOverrideTarget = targetPos ? targetPos.clone() : null;
+  }
+
+  /**
+   * Clears bypass override and returns priority to pre-set route waypoints.
+   */
+  clearBypassOverride() {
+    this.bypassOverrideTarget = null;
   }
 
   // ── Fixed 100 Hz Autonomous Navigation Step ────────────────────────────────
@@ -643,11 +661,19 @@ export class RouteController {
         const hoverVelErr = desiredHoverVel.sub(estimatedVel);
         const accelCmd = hoverVelErr.multiplyScalar(4.0);
 
-        // Clamped specific force
+        // Hover specific force in world frame
+        const f_w = [accelCmd.x, accelCmd.y + 9.80665, accelCmd.z];
+        const R = eskf.R_WB;
+        const f_b = [
+          R[0] * f_w[0] + R[3] * f_w[1] + R[6] * f_w[2],
+          R[1] * f_w[0] + R[4] * f_w[1] + R[7] * f_w[2],
+          R[2] * f_w[0] + R[5] * f_w[1] + R[8] * f_w[2],
+        ];
+
         const imuAcc = [
-          accelCmd.x + this._randn() * this.imuAccelNoise + this.accelBiasDrift[0],
-          accelCmd.y + 9.80665 + this._randn() * this.imuAccelNoise + this.accelBiasDrift[1],
-          accelCmd.z + this._randn() * this.imuAccelNoise + this.accelBiasDrift[2],
+          f_b[0] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[0],
+          f_b[1] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[1],
+          f_b[2] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[2],
         ];
         const imuGyro = [this._randn() * this.imuGyroNoise, this._randn() * this.imuGyroNoise, this._randn() * this.imuGyroNoise];
 
@@ -662,14 +688,29 @@ export class RouteController {
       }
     }
 
-    // 1. Path Following: Target current waypoint
-    const target = this.routePointsWorld[this.routeIndex];
+    // 1. Target Selection with Obstacle Avoidance Priority Override
+    const isBypassing = this.bypassOverrideTarget !== null;
+    const target = isBypassing ? this.bypassOverrideTarget : this.routePointsWorld[this.routeIndex];
     const err = new THREE.Vector3().subVectors(target, estimatedPos);
-    const dist = err.length();
+    const dist = Math.hypot(err.x, err.z);
 
-    // Advance to next waypoint when within tolerance
-    if (dist < this.WAYPOINT_TOLERANCE) {
-      this.routeIndex = Math.min(this.routePointsWorld.length - 1, this.routeIndex + 1);
+    // Only advance route waypoints when NOT actively executing an obstacle bypass detour!
+    if (!isBypassing && this.routeIndex < this.routePointsWorld.length - 1) {
+      const nextWp = this.routePointsWorld[this.routeIndex + 1];
+      const seg = new THREE.Vector3().subVectors(nextWp, target);
+      seg.y = 0;
+      const segLenSq = seg.lengthSq();
+      if (segLenSq > 1e-4) {
+        const toDrone = new THREE.Vector3().subVectors(estimatedPos, target);
+        toDrone.y = 0;
+        const projection = toDrone.dot(seg) / segLenSq;
+        // Advance if close to waypoint OR passed it along path
+        if (dist < this.WAYPOINT_TOLERANCE || projection > 0.40) {
+          this.routeIndex++;
+        }
+      } else if (dist < this.WAYPOINT_TOLERANCE) {
+        this.routeIndex++;
+      }
     }
 
     // 2. Velocity command: proportional to position error, clamped to cruise speed
@@ -686,20 +727,30 @@ export class RouteController {
     if (accelCmd.length() > MAX_ACCEL) accelCmd.setLength(MAX_ACCEL);
 
     // 4. Synthesize IMU measurements
-    // Specific Force = commanded_accel - g = [ax, ay - (-9.8), az] = [ax, ay + 9.80665, az]
+    // Specific Force in WORLD FRAME = commanded_accel - gravity
+    const f_w = [accelCmd.x, accelCmd.y + 9.80665, accelCmd.z];
+
+    // Transform specific force into BODY FRAME using transpose of R_WB (R_BW = R_WB^T)
+    const R = eskf.R_WB;
+    const f_b = [
+      R[0] * f_w[0] + R[3] * f_w[1] + R[6] * f_w[2],
+      R[1] * f_w[0] + R[4] * f_w[1] + R[7] * f_w[2],
+      R[2] * f_w[0] + R[5] * f_w[1] + R[8] * f_w[2],
+    ];
+
     const imuAcc = [
-      accelCmd.x + this._randn() * this.imuAccelNoise + this.accelBiasDrift[0],
-      accelCmd.y + 9.80665 + this._randn() * this.imuAccelNoise + this.accelBiasDrift[1],
-      accelCmd.z + this._randn() * this.imuAccelNoise + this.accelBiasDrift[2],
+      f_b[0] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[0],
+      f_b[1] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[1],
+      f_b[2] + this._randn() * this.imuAccelNoise + this.accelBiasDrift[2],
     ];
 
     // Gyroscope measurements (heading turn rate + noise)
-    const targetHeading = Math.atan2(desiredVel.x, desiredVel.z);
+    const targetHeading = Math.atan2(-desiredVel.x, -desiredVel.z);
     let headingDiff = targetHeading - this.droneHeading;
     while (headingDiff > Math.PI)  headingDiff -= Math.PI * 2;
     while (headingDiff < -Math.PI) headingDiff += Math.PI * 2;
 
-    const yawRate = THREE.MathUtils.clamp(headingDiff * 2.5, -1.8, 1.8);
+    const yawRate = THREE.MathUtils.clamp(headingDiff * 3.5, -2.5, 2.5);
     this.droneHeading += yawRate * dt;
 
     const imuGyro = [

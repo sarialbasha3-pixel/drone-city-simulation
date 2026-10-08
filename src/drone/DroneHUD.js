@@ -30,32 +30,42 @@ export class DroneHUD {
         <div style="font-size: 16px; font-weight: bold; letter-spacing: 2px;">
           DRONE SIM // <span id="hud-district" style="color: #ffea00;">DOWNTOWN SKYLINE</span>
         </div>
-        <div style="font-size: 14px;">
-          MODE: <span id="hud-speedmode" style="color: #00e676;">MEDIUM</span> |
-          CAM: <span id="hud-cammode" style="color: #ff9100;">CHASE</span> |
-          GIMBAL: <span id="hud-gimbal" style="color: #00e5ff;">0°</span>
+        <div style="font-size: 13px; display: flex; align-items: center; gap: 10px;">
+          <span>
+            MODE: <span id="hud-speedmode" style="color: #00e676;">MEDIUM</span> |
+            CAM: <span id="hud-cammode" style="color: #ff9100;">CHASE</span> |
+            GIMBAL: <span id="hud-gimbal" style="color: #00e5ff;">0°</span>
+          </span>
+          <!-- Interactive Fog Activation Button (Default: OFF) -->
+          <button id="btn-toggle-fog" style="pointer-events: auto; background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.45); color: #00e5ff; border-radius: 4px; padding: 3px 10px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;">
+            🌫️ FOG: OFF [F]
+          </button>
+          <!-- Interactive Rain Activation Button (Default: OFF) -->
+          <button id="btn-toggle-rain" style="pointer-events: auto; background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.45); color: #00e5ff; border-radius: 4px; padding: 3px 10px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;">
+            🌧️ RAIN: OFF [R]
+          </button>
         </div>
-        <div id="hud-fps" style="font-size: 14px; color: #76ff03;">60 FPS</div>
+        <div style="font-size: 12px; display: flex; align-items: center; gap: 12px;">
+          <span id="hud-env-status" style="color: #00e676; font-size: 11px;">CLEAR (21°C | VIS >5km)</span>
+          <span id="hud-fps" style="color: #76ff03;">60 FPS</span>
+        </div>
       </div>
 
-      <!-- Left Instrument: Airspeed & Speed Modes -->
-      <div style="position: absolute; left: 25px; top: 120px; background: rgba(10,15,22,0.75); padding: 12px 18px; border-left: 3px solid #00e5ff; border-radius: 4px;">
-        <div style="font-size: 11px; opacity: 0.8;">AIRSPEED</div>
-        <div id="hud-speed" style="font-size: 28px; font-weight: bold;">0.0</div>
-        <div style="font-size: 11px; color: #b0bec5;">KM/H</div>
-        <div style="margin-top: 10px; font-size: 10px; line-height: 1.5; color: #90a4ae;">
-          [1] SLOW   (18 km/h)<br>
-          [2] MEDIUM (36 km/h)<br>
-          [3] FAST   (60 km/h)
+      <!-- Left Flight Instruments Column: Airspeed & Altitude -->
+      <div style="position: absolute; left: 20px; top: 60px; background: rgba(10,15,22,0.85); padding: 10px 16px; border-left: 3px solid #00e5ff; border-radius: 6px; border: 1px solid rgba(0,229,255,0.25); border-left-width: 3px; min-width: 140px;">
+        <div style="font-size: 10px; opacity: 0.8; letter-spacing: 1px;">AIRSPEED</div>
+        <div id="hud-speed" style="font-size: 26px; font-weight: bold;">0.0</div>
+        <div style="font-size: 10px; color: #b0bec5;">KM/H</div>
+        <div style="margin-top: 6px; font-size: 9px; line-height: 1.4; color: #90a4ae;">
+          [1] SLOW (18) | [2] MED (36) | [3] FAST (60)
         </div>
       </div>
 
-      <!-- Right Instrument: Altitude AGL & MSL -->
-      <div style="position: absolute; right: 25px; top: 120px; background: rgba(10,15,22,0.75); padding: 12px 18px; border-right: 3px solid #00e5ff; border-radius: 4px; text-align: right;">
-        <div style="font-size: 11px; opacity: 0.8;">ALTITUDE (AGL)</div>
-        <div id="hud-alt-agl" style="font-size: 28px; font-weight: bold; color: #ffea00;">45.0</div>
-        <div style="font-size: 11px; color: #b0bec5;">METERS</div>
-        <div style="margin-top: 8px; font-size: 11px; opacity: 0.8;">MSL: <span id="hud-alt-msl">45.0</span> m</div>
+      <div style="position: absolute; left: 20px; top: 195px; background: rgba(10,15,22,0.85); padding: 10px 16px; border-left: 3px solid #ffea00; border-radius: 6px; border: 1px solid rgba(255,234,0,0.25); border-left-width: 3px; min-width: 140px;">
+        <div style="font-size: 10px; opacity: 0.8; letter-spacing: 1px; color: #ffea00;">ALTITUDE (AGL)</div>
+        <div id="hud-alt-agl" style="font-size: 26px; font-weight: bold; color: #ffea00;">45.0</div>
+        <div style="font-size: 10px; color: #b0bec5;">METERS</div>
+        <div style="margin-top: 6px; font-size: 10px; opacity: 0.85;">MSL: <span id="hud-alt-msl">45.0</span> m</div>
       </div>
 
       <!-- Center Crosshair / Flight Reticle -->
@@ -65,26 +75,108 @@ export class DroneHUD {
         </div>
       </div>
 
-      <!-- Bottom Bar: Coordinates, Heading, Proximity Warning -->
-      <div style="position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div style="background: rgba(10,15,22,0.8); padding: 10px 14px; border-radius: 4px; font-size: 12px;">
+      <!-- Bottom-Left Telemetry & Flight Controls Panel -->
+      <div style="position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; align-items: flex-end; z-index: 100;">
+        <div style="background: rgba(10,15,22,0.85); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(0,229,255,0.25); font-size: 11px;">
           POS: <span id="hud-coords" style="color: #fff;">X: 250, Y: 45, Z: 0</span><br>
           HDG: <span id="hud-heading" style="color: #ffea00;">000°</span>
         </div>
 
-        <div id="hud-collision-warn" style="display: none; background: rgba(213,0,0,0.85); color: #fff; padding: 8px 18px; border-radius: 4px; font-weight: bold; animation: pulse 0.5s infinite alternate;">
-          TERRAIN / OBSTACLE PROXIMITY
-        </div>
-
-        <div style="background: rgba(10,15,22,0.8); padding: 10px 14px; border-radius: 4px; font-size: 11px; line-height: 1.45; color: #cfd8dc; text-align: right;">
+        <div style="background: rgba(10,15,22,0.85); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(0,229,255,0.25); font-size: 10px; line-height: 1.45; color: #cfd8dc;">
           <strong style="color: #00e5ff;">FLIGHT:</strong> W/S: Pitch | A/D: Roll | Q/E: Yaw | Space/Shift: Elevate<br>
-          <strong style="color: #ff9100;">CAM (V):</strong> Chase / FPV (Nose) / Gimbal / Inspect / Overhead<br>
-          <strong style="color: #00e5ff;">GIMBAL:</strong> I/K or T/G: Tilt | C: Horizon / 45° / 90° Preset
+          <strong style="color: #ff9100;">CAM (V):</strong> Chase/FPV/Gimbal | <strong style="color: #00e5ff;">GIMBAL:</strong> I/K | <strong style="color: #ffea00;">ENV:</strong> [F] Fog | [R] Rain
         </div>
+      </div>
+
+      <!-- Center Bottom Proximity Warning -->
+      <div id="hud-collision-warn" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(213,0,0,0.9); color: #fff; padding: 8px 20px; border-radius: 4px; font-weight: bold; animation: pulse 0.5s infinite alternate; font-size: 12px; letter-spacing: 1px; z-index: 950;">
+        TERRAIN / OBSTACLE PROXIMITY
       </div>
     `;
 
     document.body.appendChild(this.container);
+
+    // Setup Fog & Rain Toggle Buttons and Status Indicators
+    this.btnFog = document.getElementById('btn-toggle-fog');
+    this.btnRain = document.getElementById('btn-toggle-rain');
+    this.envStatusEl = document.getElementById('hud-env-status');
+    this.onToggleFog = null;
+    this.onToggleRain = null;
+
+    if (this.btnFog) {
+      this.btnFog.addEventListener('click', () => {
+        if (typeof this.onToggleFog === 'function') {
+          this.onToggleFog();
+        }
+      });
+      this.btnFog.addEventListener('mouseenter', () => {
+        this.btnFog.style.boxShadow = '0 0 8px rgba(0, 229, 255, 0.5)';
+      });
+      this.btnFog.addEventListener('mouseleave', () => {
+        this.btnFog.style.boxShadow = 'none';
+      });
+    }
+
+    if (this.btnRain) {
+      this.btnRain.addEventListener('click', () => {
+        if (typeof this.onToggleRain === 'function') {
+          this.onToggleRain();
+        }
+      });
+      this.btnRain.addEventListener('mouseenter', () => {
+        this.btnRain.style.boxShadow = '0 0 8px rgba(0, 180, 255, 0.5)';
+      });
+      this.btnRain.addEventListener('mouseleave', () => {
+        this.btnRain.style.boxShadow = 'none';
+      });
+    }
+  }
+
+  setWeatherStatus(weatherTele) {
+    if (!this.btnFog || !this.btnRain) return;
+
+    // Update Fog button state
+    if (weatherTele.fogActive) {
+      this.btnFog.textContent = '🌫️ FOG: ACTIVE [F]';
+      this.btnFog.style.background = 'rgba(255, 170, 0, 0.25)';
+      this.btnFog.style.border = '1px solid #ffaa00';
+      this.btnFog.style.color = '#ffea00';
+    } else {
+      this.btnFog.textContent = '🌫️ FOG: OFF [F]';
+      this.btnFog.style.background = 'rgba(0, 229, 255, 0.12)';
+      this.btnFog.style.border = '1px solid rgba(0, 229, 255, 0.45)';
+      this.btnFog.style.color = '#00e5ff';
+    }
+
+    // Update Rain button state
+    if (weatherTele.rainActive) {
+      this.btnRain.textContent = '🌧️ RAIN: ACTIVE [R]';
+      this.btnRain.style.background = 'rgba(0, 180, 255, 0.25)';
+      this.btnRain.style.border = '1px solid #00b4ff';
+      this.btnRain.style.color = '#40c4ff';
+    } else {
+      this.btnRain.textContent = '🌧️ RAIN: OFF [R]';
+      this.btnRain.style.background = 'rgba(0, 229, 255, 0.12)';
+      this.btnRain.style.border = '1px solid rgba(0, 229, 255, 0.45)';
+      this.btnRain.style.color = '#00e5ff';
+    }
+
+    // Update Overall Weather Status Banner
+    if (this.envStatusEl) {
+      if (weatherTele.fogActive && weatherTele.rainActive) {
+        this.envStatusEl.textContent = `STORM (${weatherTele.temperature.toFixed(1)}°C | VIS ${weatherTele.visibility.toFixed(0)}m | RAIN ${weatherTele.rainRate.toFixed(0)}mm/h)`;
+        this.envStatusEl.style.color = '#ff5252';
+      } else if (weatherTele.rainActive) {
+        this.envStatusEl.textContent = `RAIN (${weatherTele.temperature.toFixed(1)}°C | VIS ${weatherTele.visibility.toFixed(0)}m | 20mm/h)`;
+        this.envStatusEl.style.color = '#40c4ff';
+      } else if (weatherTele.fogActive) {
+        this.envStatusEl.textContent = `FOG (${weatherTele.temperature.toFixed(1)}°C | VIS ${weatherTele.visibility.toFixed(0)}m | 100% RH)`;
+        this.envStatusEl.style.color = '#ffaa00';
+      } else {
+        this.envStatusEl.textContent = `CLEAR (${weatherTele.temperature.toFixed(1)}°C | VIS >5km)`;
+        this.envStatusEl.style.color = '#00e676';
+      }
+    }
   }
 
   update(telemetry, hasCollided, fps) {

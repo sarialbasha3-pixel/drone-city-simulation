@@ -56,7 +56,7 @@ export class World {
     const bridgeGroup = this.bridgeGen.generate();
     this.scene.add(bridgeGroup);
     // Register bridge with collision system
-    this.collisionSystem.registerObstacles([bridgeGroup]);
+    this.collisionSystem.registerObstacles([bridgeGroup], 'BRIDGE');
 
     console.log('[World] Initializing Building Generator...');
     this.buildingGen = new BuildingGenerator(this.terrain);
