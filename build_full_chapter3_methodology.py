@@ -1,23 +1,24 @@
 """
 build_full_chapter3_methodology.py
 ==================================
-Constructs a comprehensive, publication-quality, 20-page academic Chapter 3
-("Chapter 3: Methodology") for the Graduation Project:
-"Autonomous Trajectory Prediction & State Estimation System for GPS-Denied Quadrotor Navigation"
-Author: Osman Abd-almageed Khairy
-Institution: Karary University — College of Electrical Engineering
+Constructs a publication-quality, standalone Chapter 3:
+"CHAPTER 3: METHODOLOGY"
 
-Strictly complies with university formatting specifications:
-- Paper Size: A4 (21.0 cm x 29.7 cm)
-- Margins: Left (Binding) = 2.5 cm; Top = 2.0 cm; Bottom = 2.0 cm; Right = 2.0 cm
-- Font: Times New Roman (English), Simplified Arabic (Arabic)
-- Line Spacing: 1.5 lines
-- Font Color: Pure Black (#000000) throughout
-- Page Numbers: Centered at bottom of page
-- Hierarchical numbering: 3.1, 3.1.1, etc.
-- Embedding of 8 high-resolution figures (including the 4 live trajectory captures)
-- 6 comprehensive technical tables
-- 25+ mathematical equations with complete derivations
+Strictly complies with the user instruction:
+- NO institutional cover header or preamble at the top.
+- NO separate "References" section at the end (references belong in the main thesis end-matter).
+- NO generic introductory chapter preamble; begins directly with the Chapter Title and Section 3.1.
+- Strict university formatting specifications:
+  * Paper Size: A4 (21.0 cm x 29.7 cm)
+  * Margins: Left (Binding) = 2.5 cm; Top = 2.0 cm; Bottom = 2.0 cm; Right = 2.0 cm
+  * Font: Times New Roman (English), Simplified Arabic (Arabic)
+  * Line Spacing: 1.5 lines
+  * Font Color: Pure Black (#000000) throughout
+  * Page Numbers: Centered at bottom of page
+  * Hierarchical numbering: 3.1, 3.1.1, etc.
+  * 8 high-resolution figures embedded (including the 4 live trajectory captures)
+  * 6 comprehensive technical tables
+  * 25+ mathematical equations with complete derivations
 """
 
 import os
@@ -280,25 +281,11 @@ def generate_chapter_3():
     add_page_number_to_footer(doc)
     
     # ---------------------------------------------------------------------
-    # COVER / CHAPTER TITLE HEADER
+    # CHAPTER 3 HEADING (NO PREAMBLE / NO COVER BLOCK)
     # ---------------------------------------------------------------------
-    p_inst = doc.add_paragraph()
-    p_inst.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_inst.paragraph_format.space_before = Pt(0)
-    p_inst.paragraph_format.space_after = Pt(2)
-    r = p_inst.add_run("KARARY UNIVERSITY — COLLEGE OF ELECTRICAL ENGINEERING\nDEPARTMENT OF CONTROL & COMPUTER ENGINEERING")
-    r.font.name = FONT_EN; r.font.size = Pt(11); r.font.bold = True; r.font.color.rgb = COLOR_BLACK
-    
-    p_proj = doc.add_paragraph()
-    p_proj.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_proj.paragraph_format.space_before = Pt(4)
-    p_proj.paragraph_format.space_after = Pt(20)
-    r = p_proj.add_run("GRADUATION PROJECT THESIS (B.Sc. HONOURS) | ACADEMIC YEAR 2025–2026\nAUTONOMOUS TRAJECTORY PREDICTION AND STATE ESTIMATION SYSTEM FOR GPS-DENIED QUADROTOR NAVIGATION")
-    r.font.name = FONT_EN; r.font.size = Pt(12); r.font.bold = True; r.font.color.rgb = COLOR_BLACK
-    
     p_num = doc.add_paragraph()
     p_num.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_num.paragraph_format.space_before = Pt(10)
+    p_num.paragraph_format.space_before = Pt(24)
     p_num.paragraph_format.space_after = Pt(4)
     r = p_num.add_run("CHAPTER 3")
     r.font.name = FONT_EN; r.font.size = SZ_CHAP; r.font.bold = True; r.font.color.rgb = COLOR_BLACK
@@ -306,63 +293,41 @@ def generate_chapter_3():
     p_tit = doc.add_paragraph()
     p_tit.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_tit.paragraph_format.space_before = Pt(4)
-    p_tit.paragraph_format.space_after = Pt(24)
+    p_tit.paragraph_format.space_after = Pt(28)
     r = p_tit.add_run("METHODOLOGY AND SYSTEM ARCHITECTURE")
     r.font.name = FONT_EN; r.font.size = SZ_CHAP; r.font.bold = True; r.font.color.rgb = COLOR_BLACK
 
     # ---------------------------------------------------------------------
-    # 3.1 INTRODUCTION
+    # 3.1 OVERALL SYSTEM ARCHITECTURE AND OPERATIONAL OVERVIEW
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.1 Introduction")
+    add_h2(doc, "3.1 Overall System Architecture and Operational Overview")
     
     add_body_paragraph(doc,
         "Autonomous navigation of Unmanned Aerial Vehicles (UAVs) in urban environments without continuous Global Navigation "
         "Satellite System (GNSS) aiding represents one of the most critical frontiers in modern robotics, estimation theory, "
         "and intelligent flight control. In metropolitan environments, direct satellite signals are frequently degraded, severely "
         "attenuated, or entirely eliminated by tall architectural structures—a phenomenon universally known as the 'urban canyon' effect. "
-        "Furthermore, tactical and operational scenarios increasingly require UAVs to execute low-altitude missions beneath bridges, "
-        "within industrial warehouses, through indoor-outdoor transition corridors, and under adverse meteorological disturbances "
-        "(such as heavy precipitation, wind gusts, and thermal turbulence), where GNSS positioning is either physically unavailable "
-        "or vulnerable to electromagnetic jamming and spoofing."
+        "Furthermore, operational scenarios increasingly require UAVs to execute low-altitude missions beneath bridges, within industrial "
+        "warehouses, through indoor-outdoor transition corridors, and under adverse meteorological disturbances (such as heavy precipitation, "
+        "wind gusts, and thermal turbulence), where GNSS positioning is either physically unavailable or vulnerable to electromagnetic "
+        "jamming. Under unassisted inertial navigation, integrating noisy strapdown IMU measurements causes estimated position to diverge "
+        "quadratically with time due to unobserved accelerometer and gyroscope biases."
     )
     
     add_body_paragraph(doc,
-        "Under unassisted inertial navigation, a quadrotor relies exclusively on onboard strapdown Inertial Measurement Units (IMUs) "
-        "comprising tri-axial gyroscopes and tri-axial accelerometers. When integrated over time, sensor noise, stochastic thermal drift, "
-        "and unmodeled bias instabilities cause the estimated kinematic state to diverge quadratically with time in position and linearly "
-        "in velocity. Classical Error-State Extended Kalman Filters (ESKF) running in prediction-only mode can propagate uncertainty covariances "
-        "rigorously, but they fundamentally cannot eliminate unobserved bias or arrest dead-reckoning drift without external aiding measurements."
-    )
-    
-    add_body_paragraph(doc,
-        "To surmount this fundamental limitation, this graduation project investigates an innovative hybrid methodology: harnessing deep "
-        "recurrent neural networks (specifically Gated Recurrent Units, GRU) to learn nonlinear motion-drift corrections directly from temporal "
-        "kinematic patterns, sensor uncertainty, and attitude representations. When treated as an artificial velocity pseudo-measurement and "
-        "strictly regulated by rigorous statistical safety gates, this learned correction can recursively arrest inertial drift in real time. "
-        "This chapter presents an exhaustive, technically rigorous account of the end-to-end methodology: the curated 1.422-million-sample "
-        "multi-source real-flight corpus, the 15-state ESKF kinematic formulation, the GRU v3 temporal architecture, the on-policy training "
-        "regime, the multi-tiered safety gating policy, the integration into a real-time Three.js 3D urban simulation, and empirical trajectory "
-        "evaluations conducted across multiple flight geometries and weather conditions."
-    )
-
-    # ---------------------------------------------------------------------
-    # 3.2 OVERALL SYSTEM ARCHITECTURE
-    # ---------------------------------------------------------------------
-    add_h2(doc, "3.2 Overall System Architecture")
-    
-    add_body_paragraph(doc,
-        "The proposed system is structured around an asynchronous, multi-rate, decoupled client-server architecture designed to resolve "
-        "the computational tension between real-time 60–100 Hz physical simulation and computationally intensive deep learning inference. "
-        "In monolithic simulation frameworks, executing deep neural networks directly inside the physics or rendering loop triggers thread "
-        "blocking, dropped frames, and unstable numerical integration of quadrotor dynamics. Our architecture enforces strict modular separation "
-        "across three distinct computational tiers interconnected via high-speed local TCP/IP networking, as illustrated in Figure 3.1."
+        "To resolve this fundamental dead-reckoning divergence, the proposed system is structured around an asynchronous, multi-rate, "
+        "decoupled client-server architecture. This architecture resolves the computational tension between high-frequency (60–100 Hz) "
+        "physical flight simulation and computationally intensive deep learning inference. In conventional monolithic simulation "
+        "frameworks, executing deep neural networks directly inside the physics or rendering loop triggers thread blocking, dropped frames, "
+        "and numerical instability in quadrotor dynamics integration. The proposed architecture enforces strict modular separation across "
+        "three distinct computational tiers interconnected via high-speed local TCP/IP networking, as illustrated in Figure 3.1."
     )
     
     add_figure(doc, r"D:\G-P\figures\fig_system_architecture.png",
                "Figure 3.1: Complete Multi-Tier System Architecture and Inter-Service Communication Dataflow")
     
     add_body_paragraph(doc,
-        "The complete system comprises three tightly synchronized subsystems operating across dedicated ports:"
+        "The complete system comprises three tightly synchronized subsystems operating across dedicated network endpoints:"
     )
     
     add_bullet_point(doc, "Tier 1 — High-Fidelity WebGL Simulation Client (Port 3000): ",
@@ -409,9 +374,9 @@ def generate_chapter_3():
     style_academic_table(tbl_mod, [Cm(3.0), Cm(3.2), Cm(2.8), Cm(5.0), Cm(2.0)])
 
     # ---------------------------------------------------------------------
-    # 3.3 DEVELOPMENT ENVIRONMENT AND TOOLS
+    # 3.2 DEVELOPMENT ENVIRONMENT AND TOOLS
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.3 Development Environment and Tools")
+    add_h2(doc, "3.2 Development Environment and Tools")
     
     add_body_paragraph(doc,
         "To guarantee experimental reproducibility and rigorous engineering standards, all software frameworks, numerical packages, "
@@ -446,9 +411,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.4 DATASET PREPARATION AND DATA INTEGRATION
+    # 3.3 DATASET PREPARATION AND DATA INTEGRATION
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.4 Dataset Preparation and Data Integration")
+    add_h2(doc, "3.3 Dataset Preparation and Data Integration")
     
     add_body_paragraph(doc,
         "A foundational strength of this research is its grounding in a massive, multi-source, real-flight empirical dataset rather than "
@@ -460,7 +425,7 @@ def generate_chapter_3():
     add_figure(doc, r"D:\G-P\figures\fig_corpus_composition.png",
                "Figure 3.2: Composition of the 1,422,348 Real-Data Feature Corpus Across 19 Curated Flights")
     
-    add_h3(doc, "3.4.1 Multi-Source Corpus Characteristics and Operational Regimes")
+    add_h3(doc, "3.3.1 Multi-Source Corpus Characteristics and Operational Regimes")
     
     add_body_paragraph(doc,
         "Each constituent dataset contributes distinct vehicle dynamics, sensor grades, sampling rates, and flight environments:"
@@ -485,7 +450,7 @@ def generate_chapter_3():
         "extended temporal drift."
     )
     
-    add_h3(doc, "3.4.2 Environmental Metadata Stratification vs. Physical Telemetry")
+    add_h3(doc, "3.3.2 Environmental Metadata Stratification vs. Physical Telemetry")
     
     add_body_paragraph(doc,
         "A vital academic distinction enforced throughout this research (Notebook L01 and L04) concerns the interpretation of weather tags. "
@@ -527,7 +492,7 @@ def generate_chapter_3():
             tbl_flt.rows[i].cells[j].paragraphs[0].text = val
     style_academic_table(tbl_flt, [Cm(3.2), Cm(2.4), Cm(2.2), Cm(5.2), Cm(2.0)])
     
-    add_h3(doc, "3.4.3 Rigorous Whole-Flight Data Partitioning Protocol")
+    add_h3(doc, "3.3.3 Rigorous Whole-Flight Data Partitioning Protocol")
     
     add_body_paragraph(doc,
         "In sequential time-series modeling, randomly shuffling overlapping temporal windows into train and test sets constitutes severe "
@@ -539,9 +504,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.5 MACHINE-LEARNING MODEL ARCHITECTURE
+    # 3.4 MACHINE-LEARNING MODEL ARCHITECTURE
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.5 Machine-Learning Model Architecture")
+    add_h2(doc, "3.4 Machine-Learning Model Architecture")
     
     add_body_paragraph(doc,
         "The core neural estimation component is Project Ghost GRU V3, a deep recurrent neural network designed to map high-frequency "
@@ -549,7 +514,7 @@ def generate_chapter_3():
         "formulation, mathematical gating equations, and network layer topology."
     )
     
-    add_h3(doc, "3.5.1 The 24-Dimensional Input Feature Vector")
+    add_h3(doc, "3.4.1 The 24-Dimensional Input Feature Vector")
     
     add_body_paragraph(doc,
         "At each time step, the model ingests a precisely structured 24-dimensional feature vector. Ground-truth coordinates, absolute "
@@ -583,7 +548,7 @@ def generate_chapter_3():
         "we obtain an unconstrained 6D continuous representation that is uniquely differentiable and orthonormalized via Gram-Schmidt at runtime."
     )
     
-    add_h3(doc, "3.5.2 Mathematical Formulation of Gated Recurrent Units (GRU)")
+    add_h3(doc, "3.4.2 Mathematical Formulation of Gated Recurrent Units (GRU)")
     
     add_body_paragraph(doc,
         "Traditional Recurrent Neural Networks (RNNs) suffer from vanishing and exploding gradients over long temporal horizons. While Long "
@@ -604,7 +569,7 @@ def generate_chapter_3():
         "update gate z_t controls the balance between retaining the previous hidden state h_{t-1} and adopting the candidate state h̃_t."
     )
     
-    add_h3(doc, "3.5.3 Complete Network Topology and Projection Head")
+    add_h3(doc, "3.4.3 Complete Network Topology and Projection Head")
     
     add_body_paragraph(doc,
         "The complete PyTorch architecture consists of an input dimension of 24, two stacked recurrent GRU layers with hidden dimension 128 "
@@ -615,16 +580,16 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.6 MODEL TRAINING METHODOLOGY
+    # 3.5 MODEL TRAINING METHODOLOGY
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.6 Model Training Methodology")
+    add_h2(doc, "3.5 Model Training Methodology")
     
     add_body_paragraph(doc,
         "The model training program progressed through three distinct research iterations: (1) baseline architecture comparison, (2) discovery "
         "and diagnosis of closed-loop distribution shift, and (3) on-policy training with dataset augmentation."
     )
     
-    add_h3(doc, "3.6.1 Preliminary Supervised Architecture Selection: LSTM vs. GRU")
+    add_h3(doc, "3.5.1 Preliminary Supervised Architecture Selection: LSTM vs. GRU")
     
     add_body_paragraph(doc,
         "In the initial exploratory phase (Notebook L07), identical supervised window-level prediction tasks were executed to compare an "
@@ -633,7 +598,7 @@ def generate_chapter_3():
         "219,651). Consequently, the GRU was selected as the foundational model."
     )
     
-    add_h3(doc, "3.6.2 The Closed-Loop Failure of Early C0 Integration")
+    add_h3(doc, "3.5.2 The Closed-Loop Failure of Early C0 Integration")
     
     add_body_paragraph(doc,
         "Crucially, when the early supervised GRU model was integrated into a recursive closed-loop Kalman filter (the initial C0 experiment, "
@@ -650,7 +615,7 @@ def generate_chapter_3():
         "and catastrophic divergence."
     )
     
-    add_h3(doc, "3.6.3 Iteration 3: On-Policy Training with Balanced Multi-Regime Augmentation")
+    add_h3(doc, "3.5.3 Iteration 3: On-Policy Training with Balanced Multi-Regime Augmentation")
     
     add_body_paragraph(doc,
         "To resolve closed-loop shift, the training methodology was completely overhauled in Iteration 3 (Notebook L09). Rather than training "
@@ -685,9 +650,9 @@ def generate_chapter_3():
     style_academic_table(tbl_tr, [Cm(3.8), Cm(4.2), Cm(7.2)])
 
     # ---------------------------------------------------------------------
-    # 3.7 INTEGRATION OF TRAINED MODELS AND SAFETY GATES
+    # 3.6 INTEGRATION OF TRAINED MODELS AND SAFETY GATES
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.7 Integration of the Trained Models into the Complete System")
+    add_h2(doc, "3.6 Integration of the Trained Models into the Complete System")
     
     add_body_paragraph(doc,
         "Deploying deep neural networks within recursive estimation pipelines requires bulletproof safety mechanisms. Unbounded neural "
@@ -698,7 +663,7 @@ def generate_chapter_3():
     add_figure(doc, r"D:\G-P\figures\fig_safety_gates.png",
                "Figure 3.3: The Four-Stage Cascaded Safety Gating Pipeline for Guarded Kalman Updates")
     
-    add_h3(doc, "3.7.1 Four-Stage Safety Gating Formulation")
+    add_h3(doc, "3.6.1 Four-Stage Safety Gating Formulation")
     
     add_body_paragraph(doc,
         "Every raw prediction delta_v generated by the PyTorch service must successfully clear four sequential validation hurdles:"
@@ -728,7 +693,7 @@ def generate_chapter_3():
         "consecutive sub-threshold candidate updates before normal aiding resumes."
     )
     
-    add_h3(doc, "3.7.2 ESKF Measurement Update via Joseph-Form Covariance")
+    add_h3(doc, "3.6.2 ESKF Measurement Update via Joseph-Form Covariance")
     
     add_body_paragraph(doc,
         "When an update is accepted by all gates, the pseudo-velocity measurement z_v = v_ESKF + delta_v is injected into the Kalman filter. "
@@ -754,16 +719,16 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.8 SYSTEM EXECUTION AND OPERATIONAL WORKFLOW
+    # 3.7 SYSTEM EXECUTION AND OPERATIONAL WORKFLOW
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.8 System Execution and Operational Workflow")
+    add_h2(doc, "3.7 System Execution and Operational Workflow")
     
     add_body_paragraph(doc,
         "This section provides a verified, end-to-end execution workflow allowing independent researchers to launch and evaluate the complete "
         "system from scratch on any workstation."
     )
     
-    add_h3(doc, "3.8.1 Prerequisites and Dependency Setup")
+    add_h3(doc, "3.7.1 Prerequisites and Dependency Setup")
     
     add_body_paragraph(doc,
         "The host machine requires Node.js (version 18.0 or higher), Python (version 3.10 or 3.11), and Git. Dependencies are installed via:"
@@ -778,7 +743,7 @@ def generate_chapter_3():
         first_indent=Cm(0)
     )
     
-    add_h3(doc, "3.8.2 Master 1-Click Launch Procedure (`run_simulation.bat`)")
+    add_h3(doc, "3.7.2 Master 1-Click Launch Procedure (`run_simulation.bat`)")
     
     add_body_paragraph(doc,
         "For Windows workstations, a master automation batch script (`run_simulation.bat`) is provided in the repository root. Double-clicking "
@@ -787,7 +752,7 @@ def generate_chapter_3():
         "(5) launches the Vite Three.js simulation server on port 3000, and (6) opens `http://localhost:3000` in the default browser."
     )
     
-    add_h3(doc, "3.8.3 Flight Execution and Interactive Route Drawing")
+    add_h3(doc, "3.7.3 Flight Execution and Interactive Route Drawing")
     
     add_body_paragraph(doc,
         "Once loaded in the browser, the operator executes flight missions using the following standardized control protocol:"
@@ -810,9 +775,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.9 EXPERIMENTAL SETUP AND TRAJECTORY EVALUATION
+    # 3.8 EXPERIMENTAL SETUP AND TRAJECTORY EVALUATION
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.9 Experimental Setup and Trajectory Evaluation")
+    add_h2(doc, "3.8 Experimental Setup and Trajectory Evaluation")
     
     add_body_paragraph(doc,
         "To rigorously assess the system's live tracking accuracy, drift suppression capability, and meteorological resilience, a series "
@@ -820,7 +785,7 @@ def generate_chapter_3():
         "path geometries under two distinct meteorological conditions: Clear / Calm and Heavy Rain with stochastic wind turbulence."
     )
     
-    add_h3(doc, "3.9.1 Experimental Trajectory Descriptions")
+    add_h3(doc, "3.8.1 Experimental Trajectory Descriptions")
     
     add_bullet_point(doc, "Benchmark Trajectory 1 (S-Curve Corridor, 157.6 m): ",
         "An S-shaped navigational corridor spanning 157.6 meters over 51.20 seconds of flight. It initiates at coordinate (X=7 m, Y=5 m), "
@@ -834,7 +799,7 @@ def generate_chapter_3():
         "evaluates the system's ability to maintain estimator stability during extreme attitude changes and high angular rates."
     )
     
-    add_h3(doc, "3.9.2 Analysis of Empirical Trajectory Results")
+    add_h3(doc, "3.8.2 Analysis of Empirical Trajectory Results")
     
     add_body_paragraph(doc,
         "Figures 3.4 through 3.7 display the actual live telemetry and spatial trajectories captured directly from the Karary University "
@@ -855,9 +820,9 @@ def generate_chapter_3():
                "Figure 3.7: Trajectory 2 (268.3 m Looping Path) under Heavy Rain Conditions (RMSE: 6.226 m, Peak: 10.861 m, Calls: 143)")
 
     # ---------------------------------------------------------------------
-    # 3.10 COMPARATIVE ANALYSIS OF THE TRAJECTORY RESULTS
+    # 3.9 COMPARATIVE ANALYSIS OF THE TRAJECTORY RESULTS
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.10 Comparative Analysis of the Trajectory Results")
+    add_h2(doc, "3.9 Comparative Analysis of the Trajectory Results")
     
     add_body_paragraph(doc,
         "Table 3.6 presents an exhaustive quantitative comparison across the four empirical flight evaluations, documenting path lengths, "
@@ -880,7 +845,7 @@ def generate_chapter_3():
             tbl_cmp.rows[i].cells[j].paragraphs[0].text = val
     style_academic_table(tbl_cmp, [Cm(2.6), Cm(2.2), Cm(1.8), Cm(1.6), Cm(2.0), Cm(1.8), Cm(1.8), Cm(1.8), Cm(1.8)])
     
-    add_h3(doc, "3.10.1 Mathematical Definitions of Evaluation Error Metrics")
+    add_h3(doc, "3.9.1 Mathematical Definitions of Evaluation Error Metrics")
     
     add_body_paragraph(doc,
         "To ensure rigorous evaluation, all performance criteria are defined mathematically:"
@@ -890,7 +855,7 @@ def generate_chapter_3():
     add_equation_box(doc, "e_{peak} = max_{k in [1, N]} || p_{est}(k) - p_{ref}(k) ||", "(Equation 3.8: Peak Tracking Error)")
     add_equation_box(doc, "v_{drift} = (1 / t_{final}) * || p_{est}(t_{final}) - p_{ref}(t_{final}) ||", "(Equation 3.9: Final Drift Rate)")
     
-    add_h3(doc, "3.10.2 Scientific Interpretation of Observed Performance")
+    add_h3(doc, "3.9.2 Scientific Interpretation of Observed Performance")
     
     add_body_paragraph(doc,
         "Analyzing the empirical telemetry reveals several critical engineering insights:"
@@ -919,9 +884,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.11 PERFORMANCE EVALUATION AND DISCUSSION
+    # 3.10 PERFORMANCE EVALUATION AND DISCUSSION
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.11 Performance Evaluation and Discussion")
+    add_h2(doc, "3.10 Performance Evaluation and Discussion")
     
     add_body_paragraph(doc,
         "Beyond the live simulation experiments, the overarching efficacy of the Project Ghost methodology is demonstrated by the "
@@ -962,9 +927,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.12 METHODOLOGICAL LIMITATIONS AND REPRODUCIBILITY
+    # 3.11 METHODOLOGICAL LIMITATIONS AND REPRODUCIBILITY
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.12 Methodological Limitations and Reproducibility")
+    add_h2(doc, "3.11 Methodological Limitations and Reproducibility")
     
     add_body_paragraph(doc,
         "In accordance with rigorous academic ethics, the methodology must be contextualized by its explicit scientific boundaries:"
@@ -992,9 +957,9 @@ def generate_chapter_3():
     )
 
     # ---------------------------------------------------------------------
-    # 3.13 CHAPTER SUMMARY
+    # 3.12 CHAPTER SUMMARY
     # ---------------------------------------------------------------------
-    add_h2(doc, "3.13 Chapter Summary")
+    add_h2(doc, "3.12 Chapter Summary")
     
     add_body_paragraph(doc,
         "This chapter has established the comprehensive methodological, mathematical, and algorithmic architecture of the autonomous urban "
@@ -1019,34 +984,9 @@ def generate_chapter_3():
         "sub-20 ms inference and robust trajectory following under clear and heavy rain conditions.")
     
     add_body_paragraph(doc,
-        "Having formulated and validated the complete system methodology, Chapter 4 transitions to detailed experimental benchmarks, "
-        "trajectory error distributions, and comparative ablation studies."
+        "Having formulated and validated the complete system methodology, the established models and trajectory pipelines form the direct "
+        "evaluative foundation for the experimental results and comparative tracking analyses presented in the subsequent chapter."
     )
-
-    # ---------------------------------------------------------------------
-    # REFERENCES SECTION
-    # ---------------------------------------------------------------------
-    add_h2(doc, "References")
-    
-    refs = [
-        "[1] J. Sola, \"Quaternion kinematics for the error-state Kalman filter,\" Laboratoire d'Analyse et d'Architecture des Systemes (LAAS-CNRS), Toulouse, France, Tech. Rep. 1711.02508, 2017.",
-        "[2] K. Cho, B. van Merrienboer, C. Gulcehre, D. Bahdanau, F. Bougares, H. Schwenk, and Y. Bengio, \"Learning phrase representations using RNN encoder-decoder for statistical machine translation,\" in Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP), Doha, Qatar, 2014, pp. 1724–1734.",
-        "[3] Y. Zhou, C. Barnes, J. Lu, J. Yang, and H. Li, \"On the continuity of rotation representations in neural networks,\" in Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR), Long Beach, CA, USA, 2019, pp. 5745–5753.",
-        "[4] A. Loquercio, E. Kaufmann, R. Ranftl, A. Dosovitskiy, V. Koltun, and D. Scaramuzza, \"Deep drone racing: From simulation to the real world,\" IEEE Trans. Robotics, vol. 36, no. 1, pp. 1–14, Feb. 2020.",
-        "[5] D. Palossi, A. Loquercio, F. Conti, E. Flamand, D. Scaramuzza, and L. Benini, \"A 64-mW DNN-based visual navigation engine for autonomous nano-drones,\" IEEE Internet of Things Journal, vol. 6, no. 5, pp. 8379–8395, Oct. 2019.",
-        "[6] O. Ledoit and M. Wolf, \"A well-conditioned estimator for large-dimensional covariance matrices,\" Journal of Multivariate Analysis, vol. 88, no. 2, pp. 365–411, Feb. 2004.",
-        "[7] Y. Bar-Shalom, X. R. Li, and T. Kirubarajan, Estimation with Applications to Tracking and Navigation: Theory Algorithms and Software. New York, NY, USA: John Wiley & Sons, 2001.",
-        "[8] S. Ross, G. Gordon, and D. Bagnell, \"A reduction of imitation learning and structured prediction to no-regret online learning,\" in Proc. 14th Int. Conf. Artificial Intelligence and Statistics (AISTATS), Fort Lauderdale, FL, USA, 2011, pp. 627–635."
-    ]
-    for ref in refs:
-        p_ref = doc.add_paragraph()
-        p_ref.paragraph_format.line_spacing_rule = WD_LINE_SPACING.ONE_POINT_FIVE
-        p_ref.paragraph_format.space_before = Pt(0)
-        p_ref.paragraph_format.space_after = Pt(4)
-        p_ref.paragraph_format.left_indent = Cm(1.0)
-        p_ref.paragraph_format.first_line_indent = Cm(-1.0)
-        r = p_ref.add_run(ref)
-        r.font.name = FONT_EN; r.font.size = Pt(10.5); r.font.color.rgb = COLOR_BLACK
 
     # Save to D:\G-P and D:\مشروووووووع التخرجججج
     out1 = r"D:\G-P\Chapter_3_Methodology.docx"
